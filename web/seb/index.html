@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+	  body {
+	    overflow:hidden;
+	  }
+    #message {
+        background-color: #FAFAFA;
+          color: white;
+          text-align:center;
+          padding:5px;
+	}
+    #offerTiles {
+        padding-top: 2%;
+        padding-left: 7%;
+    }
+    
+    #offerTiles > div {
+        width: 30%;
+        
+        display: inline-block;
+        vertical-align: top;
+        text-align:center;
+    }
+    
+    #jackpot > p {
+        font-family: Verdana;
+        font-size: 160%;
+    }
+    #game_offer > p {
+        font-family: Verdana;
+        font-size: 160%;
+    }
+    #instant_offer > p {
+        font-family: Verdana;
+        font-size: 160%;
+    }
+    
+    </style>
+    <title>Lotto Cast Demo</title>
+  </head>
+  <body>
+	<div id="message">
+        
+        <!-- <img src="images/beach_far2.png" alt="beach_far2.png" align="middle" width="100%"> -->
+        <img src="https://media.giphy.com/media/86X7yW81ycvN6/giphy.gif" alt="beach_far2.gif" align="middle" width="100%">
+    </div>
+    
+    <div id="offerTiles">
+        <div id="jackpot">
+            <img src="images/jackpot_image.png" alt="jackpot_image.png" align="middle" width="100%">
+                <p>Powerball is 18M this Saturday!</p>
+        </div>
+        <div id="game_offer">
+            <img src="images/london_calling.png" alt="london_calling.png" align="middle" width="100%">
+            <p>London Calling!</p>
+        </div>
+        <div id="instant_offer">
+            <img src="images/instant_kiwi.png"" alt="instant_kiwi.png" align="middle" width="100%">
+            <p>Get your Instant Kiwi ticket!</p>
+        </div>
+    
+    </div>
+    
+    <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        cast.receiver.logger.setLevelValue(0);
+        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+        console.log('Starting Receiver Manager');
+        
+        // handler for the 'ready' event
+        castReceiverManager.onReady = function(event) {
+          console.log('Received Ready event: ' + JSON.stringify(event.data));
+          window.castReceiverManager.setApplicationState("Application status is ready...");
+        };
+        
+        // handler for 'senderconnected' event
+        castReceiverManager.onSenderConnected = function(event) {
+          console.log('Received Sender Connected event: ' + event.data);
+          console.log(window.castReceiverManager.getSender(event.data).userAgent);
+        };
+        
+        // handler for 'senderdisconnected' event
+        castReceiverManager.onSenderDisconnected = function(event) {
+          console.log('Received Sender Disconnected event: ' + event.data);
+          if (window.castReceiverManager.getSenders().length == 0) {
+	        window.close();
+	      }
+        };
+        
+        // handler for 'systemvolumechanged' event
+        castReceiverManager.onSystemVolumeChanged = function(event) {
+          console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' +
+              event.data['muted']);
+        };
+
+        // create a CastMessageBus to handle messages for a custom namespace
+        window.messageBus =
+          window.castReceiverManager.getCastMessageBus(
+              'urn:x-cast:nz.co.solnet.cast.lottocastdemo');
+
+        // handler for the CastMessageBus message event
+        window.messageBus.onMessage = function(event) {
+          console.log('Message [' + event.senderId + ']: ' + event.data);
+          // display the message from the sender
+          displayText(event.data);
+          // inform all senders on the CastMessageBus of the incoming message event
+          // sender message listener will be invoked
+          window.messageBus.send(event.senderId, event.data);
+        }
+
+        // initialize the CastReceiverManager with an application status message
+        window.castReceiverManager.start({statusText: "Application is starting"});
+        console.log('Receiver Manager started');
+      };
+      
+      // utility function to display the text message in the input field
+      function displayText(text) {
+        console.log(text);
+        document.getElementById("message").innerHTML=text;
+        window.castReceiverManager.setApplicationState(text);
+      };
+    </script>
+  </body>
+</html>
